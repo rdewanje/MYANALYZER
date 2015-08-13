@@ -96,13 +96,27 @@ class MYANALYZER : public edm::EDAnalyzer {
       typedef std::vector<edm::InputTag> vInputTag;
       vInputTag srcDiscriminators_;
 
+
+      // MiniAOD case data members
+      edm::EDGetToken electronsMiniAODToken_;
+      edm::EDGetTokenT<edm::View<reco::GenParticle> > genParticlesMiniAODToken_;
+
+      // ID decisions objects
+      edm::EDGetTokenT<edm::ValueMap<bool> > eleMediumIdMapToken_;
+      edm::EDGetTokenT<edm::ValueMap<bool> > eleTightIdMapToken_;
+
+      // MVA values and categories (optional)
+      edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_;
+      edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_;
+
+
       // BRANCH VARIBLES
      
 
-     // EVENT BRANCHES
-     std::vector<Int_t> _evt;      
-     std::vector<Int_t> _run;      
-     std::vector<Int_t> _lumi;      
+      // EVENT BRANCHES
+      std::vector<Int_t> _evt;      
+      std::vector<Int_t> _run;      
+      std::vector<Int_t> _lumi;      
 
 
       // TAU BRANCHES
@@ -131,19 +145,23 @@ class MYANALYZER : public edm::EDAnalyzer {
       std::vector<Bool_t> _mu_iso;
       std::vector<Float_t> _mvis;
 
-     // MUTAU BASELINE QUANTITIES
-     std::vector<Bool_t> _mu_isPFMuon ;
-     std::vector<Bool_t> _mu_MediumId ;
-     std::vector<Float_t> _mu_dxy;
-     std::vector<Float_t> _mu_dz;
-     std::vector<Float_t> _mu_chg;      
-     std::vector<Float_t> _tau_chg;      
-     std::vector<Float_t> _tau_dz;      
-     std::vector<Float_t> _tau_ID_NewDMs;
-     std::vector<Float_t> _tau_ID_Elec_VLooseMVA5;
-     std::vector<Float_t> _tau_ID_MuonTight3;
-     std::vector<Float_t> _tau_ID_DBCorrRaw3Hits;
+      // MUTAU BASELINE QUANTITIES
+      std::vector<Bool_t> _mu_isPFMuon ;
+      std::vector<Bool_t> _mu_MediumId ;
+      std::vector<Float_t> _mu_dxy;
+      std::vector<Float_t> _mu_dz;
+      std::vector<Float_t> _mu_chg;      
+      std::vector<Float_t> _tau_chg;      
+      std::vector<Float_t> _tau_dz;      
+      std::vector<Float_t> _tau_ID_NewDMs;
+      std::vector<Float_t> _tau_ID_Elec_VLooseMVA5;
+      std::vector<Float_t> _tau_ID_MuonTight3;
+      std::vector<Float_t> _tau_ID_DBCorrRaw3Hits;
 
+      std::vector<Float_t> mvaValue_;
+      std::vector<Int_t>   mvaCategory_;
+      std::vector<Int_t>   passMediumId_;
+      std::vector<Int_t>   passTightId_;
 
 
 };
@@ -185,8 +203,11 @@ bool isMediumMuon(const reco::Muon & recoMu)
 //
 // constructors and destructor
 //
-MYANALYZER::MYANALYZER(const edm::ParameterSet& iConfig)
-
+MYANALYZER::MYANALYZER(const edm::ParameterSet& iConfig):
+  eleMediumIdMapToken_   (consumes<edm::ValueMap<bool > >(iConfig.getParameter<edm::InputTag>("eleMediumIdMap"  ))),
+  eleTightIdMapToken_    (consumes<edm::ValueMap<bool > >(iConfig.getParameter<edm::InputTag>("eleTightIdMap"   ))),
+  mvaValuesMapToken_     (consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap"    ))),
+  mvaCategoriesMapToken_ (consumes<edm::ValueMap<int  > >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap")))
 {
   //now do what ever initialization is needed
   TauLabel           = iConfig.getUntrackedParameter<std::string>("TauCollection");
@@ -195,7 +216,6 @@ MYANALYZER::MYANALYZER(const edm::ParameterSet& iConfig)
   theFileName        = iConfig.getUntrackedParameter<std::string>("fileName");
   srcTauCandidates_  = iConfig.getParameter<edm::InputTag>("srcTauCandidates");
   srcDiscriminators_ = iConfig.getParameter<vInputTag>("srcDiscriminators");
-
  
   //  Initialize(); 
   _evt.clear();
@@ -236,6 +256,11 @@ MYANALYZER::MYANALYZER(const edm::ParameterSet& iConfig)
   _tau_ID_Elec_VLooseMVA5.clear();
   _tau_ID_MuonTight3.clear();
   _tau_ID_DBCorrRaw3Hits.clear();
+  
+  mvaValue_.clear();
+  mvaCategory_.clear();
+  passMediumId_.clear();
+  passTightId_.clear();
 }
 
 
@@ -288,12 +313,16 @@ MYANALYZER::beginJob()
   myTree->Branch("Mu_dz",&_mu_dz);
   myTree->Branch("Mu_chg",&_mu_chg);
   myTree->Branch("Tau_chg",&_tau_chg);
-  myTree->Branch("Tau_dz",&_tau_dz);
-  myTree->Branch("isMuPF",&_mu_isPFMuon);
-  myTree->Branch("TauID_NewDMs",&_tau_ID_NewDMs);
-  myTree->Branch("TauID_Elec_VLooseMVA5",&_tau_ID_Elec_VLooseMVA5);
-  myTree->Branch("TauID_MuonTight3",&_tau_ID_MuonTight3);
-  myTree->Branch("TauID_DBCorrRaw3Hits",&_tau_ID_DBCorrRaw3Hits);
+  myTree->Branch("Tau_dz"               , &_tau_dz);
+  myTree->Branch("isMuPF"               , &_mu_isPFMuon);
+  myTree->Branch("TauID_NewDMs"         , &_tau_ID_NewDMs);
+  myTree->Branch("TauID_Elec_VLooseMVA5", &_tau_ID_Elec_VLooseMVA5);
+  myTree->Branch("TauID_MuonTight3"     , &_tau_ID_MuonTight3     );
+  myTree->Branch("TauID_DBCorrRaw3Hits" , &_tau_ID_DBCorrRaw3Hits );
+  myTree->Branch("mvaVal"               , &mvaValue_              );
+  myTree->Branch("mvaCat"               , &mvaCategory_           );
+  myTree->Branch("ElePassMediumId"      , &passMediumId_          );
+  myTree->Branch("ElePassTightId"       , &passTightId_           );
 
 }
 
@@ -339,35 +368,27 @@ MYANALYZER::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       // If you need more info, check with the EGM group.
       edm::Handle<edm::ValueMap<bool> > medium_id_decisions;
       edm::Handle<edm::ValueMap<bool> > tight_id_decisions; 
-      // iEvent.getByToken("egmGsfElectronIDs:mvaEleID-PHYS14-PU20bx25-nonTrig-V1-wp80",medium_id_decisions);
-      // iEvent.getByToken("egmGsfElectronIDs:mvaEleID-PHYS14-PU20bx25-nonTrig-V1-wp90",tight_id_decisions);
-      iEvent.getByLabel("egmGsfElectronIDs:mvaEleID-PHYS14-PU20bx25-nonTrig-V1-wp80",medium_id_decisions);
-      iEvent.getByLabel("egmGsfElectronIDs:mvaEleID-PHYS14-PU20bx25-nonTrig-V1-wp90",tight_id_decisions);
+      iEvent.getByToken(eleMediumIdMapToken_, medium_id_decisions);
+      iEvent.getByToken(eleTightIdMapToken_ , tight_id_decisions );
 
       // Get MVA values and categories (optional)
       edm::Handle<edm::ValueMap<float> > mvaValues;
       edm::Handle<edm::ValueMap<int> > mvaCategories;
-      // iEvent.getByToken("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Phys14NonTrigValues",mvaValues);
-      // iEvent.getByToken("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Phys14NonTrigCategories",mvaCategories); 
-
-      iEvent.getByLabel("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Phys14NonTrigValues",mvaValues);
-      iEvent.getByLabel("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Phys14NonTrigCategories",mvaCategories); 
-
-
-
+      iEvent.getByToken(mvaValuesMapToken_    , mvaValues    );
+      iEvent.getByToken(mvaCategoriesMapToken_, mvaCategories);
 
       // FOR MINIAODSIM                                                                                            
       edm::Handle<pat::ElectronCollection>ElectronHandle;
       iEvent.getByLabel("slimmedElectrons",ElectronHandle);
       const pat::ElectronCollection*  Electrons = ElectronHandle.product();
       for(pat::ElectronCollection::const_iterator iElectron = Electrons->begin(); iElectron != Electrons->end();iElectron++){
-          std::cout<< "ELECTRON PT: "<< iElectron->pt() << std::endl;
-          std::cout<< "ELECTRON ETA: "<< iElectron->eta() << std::endl;
-          std::cout<< "ELECTRON DXY: "<< iElectron->gsfTrack()->dxy(iVertex->position()) << std::endl;
-          std::cout<< "ELECTRON DZ: "<< iElectron->gsfTrack()->dz(iVertex->position()) << std::endl;  
-	  std::cout<< "ELECTRON PASS CONVERSION VETO: "<< iElectron->passConversionVeto() << std::endl;
-	  std::cout<< "ELECTRON MISSING INNER HITS: "<< iElectron->gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS) << std::endl;
-          std::cout<< "ELECTRON ISOLATION: "<<  (iElectron->pfIsolationVariables().sumChargedHadronPt + max(iElectron->pfIsolationVariables().sumNeutralHadronEt + iElectron->pfIsolationVariables().sumPhotonEt - 0.5 * iElectron->pfIsolationVariables().sumPUPt, 0.0)) / iElectron->pt()<< std::endl;
+          std::cout<< "ELECTRON PT:                   " << iElectron->pt() << std::endl;
+          std::cout<< "ELECTRON ETA:                  " << iElectron->eta() << std::endl;
+          std::cout<< "ELECTRON DXY:                  " << iElectron->gsfTrack()->dxy(iVertex->position()) << std::endl;
+          std::cout<< "ELECTRON DZ:                   " << iElectron->gsfTrack()->dz(iVertex->position()) << std::endl;  
+          std::cout<< "ELECTRON PASS CONVERSION VETO: " << iElectron->passConversionVeto() << std::endl;
+          std::cout<< "ELECTRON MISSING INNER HITS:   " << iElectron->gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS) << std::endl;
+          std::cout<< "ELECTRON ISOLATION:            " << (iElectron->pfIsolationVariables().sumChargedHadronPt + max(iElectron->pfIsolationVariables().sumNeutralHadronEt + iElectron->pfIsolationVariables().sumPhotonEt - 0.5 * iElectron->pfIsolationVariables().sumPUPt, 0.0)) / iElectron->pt()<< std::endl;
       }
 
 
@@ -377,14 +398,28 @@ MYANALYZER::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       
 
       for(size_t i = 0; i < electrons->size(); ++i){
-          const auto el = electrons->ptrAt(i);
-          bool isPassMedium = (*medium_id_decisions)[el];
-	  bool isPassTight  = (*tight_id_decisions)[el]; 
-          std::cout<< "ELECTRON SC ETA: "<< el->superCluster()->eta() << std::endl;
-          std::cout<< "ELECTRON PASS MEDIUM: "<< (int)isPassMedium << std::endl;    
-          std::cout<< "ELECTRON PASS TIGHT: "<< (int)isPassTight << std::endl;    
-	  std::cout<< "ELECTRON MVA VALUE: "<< (*mvaValues)[el] << std::endl;        
-	  std::cout<< "ELECTRON MVA CATS: "<< (*mvaCategories)[el]<< std::endl;        
+         const auto el = electrons->ptrAt(i);
+         
+         // Kinematics
+         if( el->pt() < 5 ) // keep only electrons above 5 GeV
+           continue;
+         
+         //
+         // Look up and save the ID decisions
+         // 
+         bool isPassMedium = (*medium_id_decisions)[el];
+         bool isPassTight  = (*tight_id_decisions) [el];
+         passMediumId_.push_back( (int)isPassMedium);
+         passTightId_ .push_back ( (int)isPassTight );
+         
+         mvaValue_   .push_back( (*mvaValues)    [el] );
+         mvaCategory_.push_back( (*mvaCategories)[el] );
+                  
+         std::cout<< "ELECTRON SC ETA:      " << el->superCluster()->eta() << std::endl;
+         std::cout<< "ELECTRON PASS MEDIUM: " << (int)isPassMedium         << std::endl;    
+         std::cout<< "ELECTRON PASS TIGHT:  " << (int)isPassTight          << std::endl;    
+         std::cout<< "ELECTRON MVA VALUE:   " << (*mvaValues)[el]          << std::endl;        
+         std::cout<< "ELECTRON MVA CATS:    " << (*mvaCategories)[el]      << std::endl;        
       }
 
 
@@ -450,10 +485,10 @@ MYANALYZER::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
          _mu_dz.push_back(iMuon->muonBestTrack()->dz(iVertex->position()) );
          _mu_chg.push_back(iMuon->charge());
          std::cout<< "MU PX: "<< iMuon->px() << std::endl;
-	 std::cout<< "MU PT: "<< iMuon->pt() << std::endl;
-	 // std::cout<< "MU dxy: "<< iMuon->muonBestTrack()->dxy(iVertex->position()) << std::endl;
-	 // std::cout<< "MU dz: "<< iMuon->muonBestTrack()->dz(iVertex->position()) << std::endl;
-	 // std::cout<< "Muon charge: "<< iMuon->charge() << std::endl; 
+     std::cout<< "MU PT: "<< iMuon->pt() << std::endl;
+     // std::cout<< "MU dxy: "<< iMuon->muonBestTrack()->dxy(iVertex->position()) << std::endl;
+     // std::cout<< "MU dz: "<< iMuon->muonBestTrack()->dz(iVertex->position()) << std::endl;
+     // std::cout<< "Muon charge: "<< iMuon->charge() << std::endl; 
 
     //    }
    }
@@ -534,14 +569,14 @@ MYANALYZER::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      double tauDiscriminatorValue_pucorr_iso = 0.;
 
      for ( vInputTag::const_iterator srcDiscriminator = srcDiscriminators_.begin();
-	   srcDiscriminator != srcDiscriminators_.end(); ++srcDiscriminator ) { // LOOP OVER TAU DISCRIM.S
+       srcDiscriminator != srcDiscriminators_.end(); ++srcDiscriminator ) { // LOOP OVER TAU DISCRIM.S
        edm::Handle<reco::PFTauDiscriminator> tauDiscriminators;
        iEvent.getByLabel(*srcDiscriminator, tauDiscriminators);
        double minValue = 0.5;
        double maxValue = 1.e+3;
        if ( srcDiscriminator->label() == "hpsPFTauMVA3IsolationChargedIsoPtSum" ) { // special treatment of "discriminators" that are in fact isolation pT-sums
-	 minValue = -1.;
-	 maxValue = 2.;
+     minValue = -1.;
+     maxValue = 2.;
        }
 
        if ( srcDiscriminator->label() == "hpsPFTauMVA3IsolationChargedIsoPtSum" ||
@@ -554,19 +589,19 @@ MYANALYZER::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
        if( srcDiscriminator->label() == "hpsPFTauMVA3IsolationChargedIsoPtSum" ){
          tauDiscriminatorValue_chg_iso = (*tauDiscriminators)[tauCandidate];   
-	 // std::cout << "Chg Iso. value: "<< tauDiscriminatorValue_chg_iso << std::endl;
+     // std::cout << "Chg Iso. value: "<< tauDiscriminatorValue_chg_iso << std::endl;
        }
 
 
        if( srcDiscriminator->label() == "hpsPFTauMVA3IsolationNeutralIsoPtSum" ){
          tauDiscriminatorValue_neutral_iso = (*tauDiscriminators)[tauCandidate];   
-	 // std::cout << "Neutral Iso. value: "<< tauDiscriminatorValue_neutral_iso << std::endl;
+     // std::cout << "Neutral Iso. value: "<< tauDiscriminatorValue_neutral_iso << std::endl;
        }
 
 
       if( srcDiscriminator->label() == "hpsPFTauMVA3IsolationPUcorrPtSum" ){
          tauDiscriminatorValue_pucorr_iso = (*tauDiscriminators)[tauCandidate];   
-	 // std::cout << "PU corr. Iso. value: "<< tauDiscriminatorValue_pucorr_iso << std::endl;
+     // std::cout << "PU corr. Iso. value: "<< tauDiscriminatorValue_pucorr_iso << std::endl;
        }
     } // LOOP OVER TAU DISC ENDS
    

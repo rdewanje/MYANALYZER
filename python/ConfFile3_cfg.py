@@ -62,10 +62,14 @@ process.TFileService=cms.Service('TFileService',fileName=cms.string('MuTau_skim_
 
 
 process.demo = cms.EDAnalyzer('MYANALYZER',
-               TauCollection  = cms.untracked.string("hpsPFTauProducer"),                    
-               MuonCollection = cms.untracked.string("muons"),       
-               fileName       = cms.untracked.string("Output.root"),
-               srcTauCandidates = cms.InputTag('hpsPFTauProducer'),
+               eleMediumIdMap    = cms.InputTag("egmGsfElectronIDs:mvaEleID-PHYS14-PU20bx25-nonTrig-V1-wp80"),
+               eleTightIdMap     = cms.InputTag("egmGsfElectronIDs:mvaEleID-PHYS14-PU20bx25-nonTrig-V1-wp90"),
+               mvaValuesMap      = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Phys14NonTrigValues"),
+               mvaCategoriesMap  = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Phys14NonTrigCategories"),
+               TauCollection     = cms.untracked.string("hpsPFTauProducer"),                    
+               MuonCollection    = cms.untracked.string("muons"),       
+               fileName          = cms.untracked.string("Output.root"),
+               srcTauCandidates  = cms.InputTag('hpsPFTauProducer'),
                srcDiscriminators = cms.VInputTag(
                     'hpsPFTauDiscriminationByDecayModeFindingNewDMs',
                     'hpsPFTauMVA3IsolationChargedIsoPtSum',
