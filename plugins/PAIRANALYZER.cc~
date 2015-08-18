@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    MYANALYZER/MYANALYZER
-// Class:      MYANALYZER
+// Package:    PAIRANALYZER/PAIRANALYZER
+// Class:      PAIRANALYZER
 // 
-/**\class MYANALYZER MYANALYZER.cc MYANALYZER/MYANALYZER/plugins/MYANALYZER.cc
+/**\class PAIRANALYZER PAIRANALYZER.cc PAIRANALYZER/PAIRANALYZER/plugins/PAIRANALYZER.cc
 
  Description: [one line class summary]
 
@@ -64,18 +64,17 @@
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
 
-#include "MYANALYZER/MYANALYZER/interface/MuTauPairMaker.h"
-#include "MYANALYZER/MYANALYZER/src/MuTauPairMaker.cc"
+#include "../interface/MuTauPairMaker.h"
 
 
 //
 // class declaration
 //
 
-class MYANALYZER : public edm::EDAnalyzer {
+class PAIRANALYZER : public edm::EDAnalyzer {
    public:
-      explicit MYANALYZER(const edm::ParameterSet&);
-      ~MYANALYZER();
+      explicit PAIRANALYZER(const edm::ParameterSet&);
+      ~PAIRANALYZER();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -173,7 +172,7 @@ class MYANALYZER : public edm::EDAnalyzer {
 };
 
 /*
-void MYANALYZER::Intialize(){
+void PAIRANALYZER::Intialize(){
   _tau_pt.clear();
   _mu_pt.clear();
 
@@ -209,7 +208,7 @@ bool isMediumMuon(const reco::Muon & recoMu)
 //
 // constructors and destructor
 //
-MYANALYZER::MYANALYZER(const edm::ParameterSet& iConfig):
+PAIRANALYZER::PAIRANALYZER(const edm::ParameterSet& iConfig):
   mutaupairmaker_(iConfig, consumesCollector()),
   eleMediumIdMapToken_   (consumes<edm::ValueMap<bool > >(iConfig.getParameter<edm::InputTag>("eleMediumIdMap"  ))),
   eleTightIdMapToken_    (consumes<edm::ValueMap<bool > >(iConfig.getParameter<edm::InputTag>("eleTightIdMap"   ))),
@@ -273,7 +272,7 @@ MYANALYZER::MYANALYZER(const edm::ParameterSet& iConfig):
 }
 
 
-MYANALYZER::~MYANALYZER()
+PAIRANALYZER::~PAIRANALYZER()
 {
  
    // do anything here that needs to be done at desctruction time
@@ -287,7 +286,7 @@ MYANALYZER::~MYANALYZER()
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-MYANALYZER::beginJob()
+PAIRANALYZER::beginJob()
 {
   edm::Service<TFileService> fs;
   myTree = fs->make<TTree>("MuTauTree","MuTauTree");
@@ -344,7 +343,7 @@ MYANALYZER::beginJob()
 
 // ------------ method called for each event  ------------
 void
-MYANALYZER::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+PAIRANALYZER::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
    using namespace reco;
@@ -713,7 +712,7 @@ MYANALYZER::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
-MYANALYZER::endJob() 
+PAIRANALYZER::endJob() 
 {
 
   //  Clear all vectors                                                                                                                                                                             
@@ -762,7 +761,7 @@ MYANALYZER::endJob()
 // ------------ method called when starting to processes a run  ------------
 /*
 void 
-MYANALYZER::beginRun(edm::Run const&, edm::EventSetup const&)
+PAIRANALYZER::beginRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -770,7 +769,7 @@ MYANALYZER::beginRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when ending the processing of a run  ------------
 /*
 void 
-MYANALYZER::endRun(edm::Run const&, edm::EventSetup const&)
+PAIRANALYZER::endRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -778,7 +777,7 @@ MYANALYZER::endRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
 void 
-MYANALYZER::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+PAIRANALYZER::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
@@ -786,14 +785,14 @@ MYANALYZER::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup co
 // ------------ method called when ending the processing of a luminosity block  ------------
 /*
 void 
-MYANALYZER::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+PAIRANALYZER::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-MYANALYZER::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+PAIRANALYZER::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -802,4 +801,4 @@ MYANALYZER::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(MYANALYZER);
+DEFINE_FWK_MODULE(PAIRANALYZER);

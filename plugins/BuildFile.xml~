@@ -1,6 +1,6 @@
 <export>
 </export>
-<library name="MYANALYZERMYANALYZER_plugins" file="*.cc">
+<library name="PAIRANALYZERPAIRANALYZER_plugins" file="*.cc">
   <flags   EDM_PLUGIN="1"/>
   <use name="FWCore/Framework"/>
   <use name="FWCore/PluginManager"/>
