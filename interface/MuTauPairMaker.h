@@ -29,7 +29,8 @@ namespace mtp {
   };
   typedef std::vector<MuTauPair> MuTauPairs;
 
-  class MuTauPairMaker{
+  class MuTauPairMaker
+  {
       public: 
           MuTauPairMaker( const edm::ParameterSet &iConfig, edm::ConsumesCollector && iC );
           ~MuTauPairMaker() {}
