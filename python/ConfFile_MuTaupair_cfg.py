@@ -127,7 +127,7 @@ process.demo = cms.EDAnalyzer('PAIRANALYZER',
 
 
 #process.p = cms.Path( process.selectedPatTaus * process.demo)
-process.p = cms.Path( ( (process.selectedPatMuons * process.PATMuSkimmedBy1)  +  (process.selectedPatTaus * process.PATTauSkimmedBy1) ) * ( process.egmGsfElectronIDSequence * process.demo))
+process.p = cms.Path( ( (process.selectedPatMuons * process.PATMuSkimmedBy1)  +  (process.selectedPatTaus * process.PATTauSkimmedBy1) ) * process.MuTauPairs * ( process.egmGsfElectronIDSequence * process.demo))
 
 
 
