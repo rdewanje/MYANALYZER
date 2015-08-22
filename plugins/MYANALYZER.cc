@@ -355,8 +355,11 @@ MYANALYZER::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    // FOR PAIRS
    mtp::MuTauPairs pairs = mutaupairmaker_.run(iEvent);
    for( mtp::MuTauPairs::const_iterator it = pairs.begin(); it != pairs.end(); it++ ){
-        std::cout<< "pairs.size() "<< pairs.size() << std::endl;
-
+        std::cout<< "pairs.size() "<< pairs.size() << std::endl; // THIS LINE WORKS
+        const mtp::MuTauPair & mutaucandiate = *it;
+        std::cout<< "MuTau mass: "<< mutaucandiate.mass << std::endl;     // THIS LINE WORKS 
+        std::cout<< "Mu Pt: "<< (mutaucandiate.cand1).pt() << std::endl;  // THIS LINE GIVES COMPILATION ERROR "const CandidatBaseRef has no member named pt()"
+         
    } 
 
 
@@ -404,13 +407,13 @@ MYANALYZER::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       iEvent.getByLabel("slimmedElectrons",ElectronHandle);
       const pat::ElectronCollection*  Electrons = ElectronHandle.product();
       for(pat::ElectronCollection::const_iterator iElectron = Electrons->begin(); iElectron != Electrons->end();iElectron++){
-          std::cout<< "ELECTRON PT:                   " << iElectron->pt() << std::endl;
-          std::cout<< "ELECTRON ETA:                  " << iElectron->eta() << std::endl;
-          std::cout<< "ELECTRON DXY:                  " << iElectron->gsfTrack()->dxy(iVertex->position()) << std::endl;
-          std::cout<< "ELECTRON DZ:                   " << iElectron->gsfTrack()->dz(iVertex->position()) << std::endl;  
-          std::cout<< "ELECTRON PASS CONVERSION VETO: " << iElectron->passConversionVeto() << std::endl;
-          std::cout<< "ELECTRON MISSING INNER HITS:   " << iElectron->gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS) << std::endl;
-          std::cout<< "ELECTRON ISOLATION:            " << (iElectron->pfIsolationVariables().sumChargedHadronPt + max(iElectron->pfIsolationVariables().sumNeutralHadronEt + iElectron->pfIsolationVariables().sumPhotonEt - 0.5 * iElectron->pfIsolationVariables().sumPUPt, 0.0)) / iElectron->pt()<< std::endl;
+	// std::cout<< "ELECTRON PT:                   " << iElectron->pt() << std::endl;
+	// std::cout<< "ELECTRON ETA:                  " << iElectron->eta() << std::endl;
+	// std::cout<< "ELECTRON DXY:                  " << iElectron->gsfTrack()->dxy(iVertex->position()) << std::endl;
+	// std::cout<< "ELECTRON DZ:                   " << iElectron->gsfTrack()->dz(iVertex->position()) << std::endl;  
+	// std::cout<< "ELECTRON PASS CONVERSION VETO: " << iElectron->passConversionVeto() << std::endl;
+	// std::cout<< "ELECTRON MISSING INNER HITS:   " << iElectron->gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS) << std::endl;
+	// std::cout<< "ELECTRON ISOLATION:            " << (iElectron->pfIsolationVariables().sumChargedHadronPt + max(iElectron->pfIsolationVariables().sumNeutralHadronEt + iElectron->pfIsolationVariables().sumPhotonEt - 0.5 * iElectron->pfIsolationVariables().sumPUPt, 0.0)) / iElectron->pt()<< std::endl;
       }
 
 
@@ -437,11 +440,11 @@ MYANALYZER::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
          mvaValue_   .push_back( (*mvaValues)    [el] );
          mvaCategory_.push_back( (*mvaCategories)[el] );
                   
-         std::cout<< "ELECTRON SC ETA:      " << el->superCluster()->eta() << std::endl;
-         std::cout<< "ELECTRON PASS MEDIUM: " << (int)isPassMedium         << std::endl;    
-         std::cout<< "ELECTRON PASS TIGHT:  " << (int)isPassTight          << std::endl;    
-         std::cout<< "ELECTRON MVA VALUE:   " << (*mvaValues)[el]          << std::endl;        
-         std::cout<< "ELECTRON MVA CATS:    " << (*mvaCategories)[el]      << std::endl;        
+         // std::cout<< "ELECTRON SC ETA:      " << el->superCluster()->eta() << std::endl;
+         // std::cout<< "ELECTRON PASS MEDIUM: " << (int)isPassMedium         << std::endl;    
+         // std::cout<< "ELECTRON PASS TIGHT:  " << (int)isPassTight          << std::endl;    
+         // std::cout<< "ELECTRON MVA VALUE:   " << (*mvaValues)[el]          << std::endl;        
+         // std::cout<< "ELECTRON MVA CATS:    " << (*mvaCategories)[el]      << std::endl;        
       }
 
 

@@ -1,6 +1,13 @@
 #ifndef MuTauPairMaker_h
 #define MuTauPairMaker_h
 
+// PAT HEADERS
+#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Tau.h"
+#include "DataFormats/PatCandidates/interface/Photon.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
+
 
 #include "DataFormats/Candidate/interface/CandidateFwd.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -19,7 +26,15 @@ namespace mtp {
     float mass;
     MuTauPair() {}
     MuTauPair(const reco::CandidateBaseRef &c1, const reco::CandidateBaseRef &c2,
-	      const reco::CandidateBaseRef &p, float m) : cand1(c1), cand2(c2), pair(p), mass(m) {} 
+               const reco::CandidateBaseRef &p, float m) : cand1(c1), cand2(c2), pair(p), mass(m) {} 
+
+
+    // pat::Muon cand1;
+    // pat::Tau cand2;
+    // MuTauPair() {}
+    // MuTauPair(const pat::Muon &c1, const pat::Tau &c2) : cand1(c1), cand2(c2) {} 
+
+
 
   };
   typedef std::vector<MuTauPair> MuTauPairs;
